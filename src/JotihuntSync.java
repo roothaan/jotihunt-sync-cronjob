@@ -14,6 +14,7 @@ import org.roothaan.LoginToken;
 import org.roothaan.SyncSettings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.roothaan.exceptions.JotihuntSyncException;
 
 public class JotihuntSync {
 
@@ -22,7 +23,7 @@ public class JotihuntSync {
     /**
      * We are allowed to sync every minute.
      */
-    private final long timeBetweenSyncs = TimeUnit.MINUTES.toMillis(1);
+    private long timeBetweenSyncs = TimeUnit.MINUTES.toMillis(1);
 
     private SyncSettings settings;
 
@@ -34,6 +35,7 @@ public class JotihuntSync {
         settings = SyncSettings.build();
         LoginToken apikey = getApiKey();
         setEvent(apikey);
+        configureTimer();
         scheduleSync(apikey);
     }
 
@@ -52,8 +54,7 @@ public class JotihuntSync {
             conn.setRequestProperty("authenticationPassword", settings.password);
 
             // parse result and return key
-            LoginToken token = mapper.readValue(conn.getInputStream(), LoginToken.class);
-            return token;
+            return mapper.readValue(conn.getInputStream(), LoginToken.class);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -72,8 +73,7 @@ public class JotihuntSync {
             conn.connect();
 
             // parse result and return key
-            EventSetToken token = mapper.readValue(conn.getInputStream(), EventSetToken.class);
-            return token;
+            return mapper.readValue(conn.getInputStream(), EventSetToken.class);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -82,6 +82,13 @@ public class JotihuntSync {
             }
         }
         return null;
+    }
+
+    private void configureTimer() {
+        if (settings.syncFrequency > 0) {
+            timeBetweenSyncs = TimeUnit.MINUTES.toMillis(settings.syncFrequency);
+            System.out.println("reset timer to " + timeBetweenSyncs + " millis (" + settings.syncFrequency + " minutes)");
+        }
     }
 
     private TimerTask getTask(final LoginToken apikey) {

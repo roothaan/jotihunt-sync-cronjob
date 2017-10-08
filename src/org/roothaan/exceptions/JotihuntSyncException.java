@@ -1,3 +1,4 @@
+package org.roothaan.exceptions;
 
 public class JotihuntSyncException extends Exception {
 
