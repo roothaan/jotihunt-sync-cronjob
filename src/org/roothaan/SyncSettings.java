@@ -8,7 +8,6 @@ public class SyncSettings {
     private static final String EVENT_ID_KEY = "eventId";
     private static final String SYNC_FREQUENCY_KEY = "syncFrequency";
 
-
     public String username;
     public String password;
     public String endpoint;
